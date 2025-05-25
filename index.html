@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth transition-colors duration-300">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-600 dark:from-gray-900 dark:to-black font-poppins text-white">
+  <div class="max-w-md mx-auto p-6 backdrop-blur-lg bg-white/10 dark:bg-white/5 rounded-2xl shadow-xl mt-16">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-extrabold tracking-wider">To-Do's</h1>
+      <button id="mode-toggle" class="text-xl p-2 hover:bg-white/20 rounded-full">🌞</button>
+    </header>
+
+    <!-- Task Counter -->
+    <div id="task-counter" class="text-sm text-white/70 mb-2 text-center">You have 0 tasks. Get moving! 🏃‍♂️</div>
+
+    <!-- Task Form -->
+    <form id="task-form" class="flex gap-2 mb-4">
+      <input
+        type="text"
+        id="task-input"
+        placeholder="What’s poppin’ today?"
+        class="flex-1 p-3 rounded-lg bg-white/30 placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-pink-400" required
+      />
+      <select id="task-priority" class="bg-white/20 text-white text-sm rounded-lg px-2">
+        <option value="chill">🧘 Chill</option>
+        <option value="normal" selected>📌 Normal</option>
+        <option value="urgent">🔥 Urgent</option>
+      </select>
+      <button type="submit" class="px-4 py-3 bg-pink-500 font-bold rounded-lg hover:scale-105 transform transition">
+        Add
+      </button>
+    </form>
+
+    <!-- Filter Buttons -->
+    <div class="flex justify-around mb-4">
+      <button id="filter-all" class="relative overflow-hidden px-4 py-2">
+        💀 All
+        <span class="underline-bar absolute bottom-0 left-0 h-0.5 bg-white w-0 transition-all duration-300"></span>
+      </button>
+      
+      <button id="filter-active" class="relative overflow-hidden px-4 py-2">
+        🆕 Active
+        <span class="underline-bar absolute bottom-0 left-0 h-0.5 bg-white w-0 transition-all duration-300"></span>
+      </button>
+    
+      <button id="filter-done" class="relative overflow-hidden px-4 py-2">
+        ✅ Done
+        <span class="underline-bar absolute bottom-0 left-0 h-0.5 bg-white w-0 transition-all duration-300"></span>
+      </button>
+      
+      <button id="clear-completed" class="filter-btn">🗑️ Clear
+        <span class="underline-bar absolute bottom-0 left-0 h-0.5 bg-white w-0 transition-all duration-300"></span>
+      </button>
+    </div>
+
+    <!-- Task List -->
+    <ul id="task-list" class="space-y-2"></ul>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center mt-6 opacity-60">
+      <p class="text-xl">✨ Nothing here. Manifesting productivity...</p>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-pink-600 text-white px-4 py-2 rounded-xl shadow-xl hidden">
+    ✅ Task Added!
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class', // 👈 switches from system-based to manual
+      theme: {
+        extend: {
+          fontFamily: {
+            poppins: ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>  
+</body>
+</html>
