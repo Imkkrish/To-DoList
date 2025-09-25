@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do Widget</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .widget-container {
+            width: 320px;
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .widget-header {
+            background: rgba(255,255,255,0.1);
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .widget-content {
+            padding: 16px;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+        .task-item {
+            background: rgba(255,255,255,0.1);
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .task-completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        .add-task-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .add-task-input {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+        }
+        .add-task-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        .add-task-btn {
+            background: #ec4899;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-task-btn:hover {
+            background: #db2777;
+            transform: scale(1.05);
+        }
+        .priority-urgent { border-left: 3px solid #ef4444; }
+        .priority-normal { border-left: 3px solid #3b82f6; }
+        .priority-chill { border-left: 3px solid #10b981; }
+        .task-actions {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .task-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .task-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .empty-state {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-style: italic;
+            margin-top: 20px;
+        }
+        .task-counter {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="widget-container">
+        <div class="widget-header">
+            <h3 style="margin: 0; color: white; font-weight: 600;">📝 Quick Tasks</h3>
+        </div>
+        <div class="widget-content">
+            <div class="task-counter" id="task-counter">0 tasks</div>
+            
+            <form class="add-task-form" id="add-task-form">
+                <input 
+                    type="text" 
+                    class="add-task-input" 
+                    id="task-input" 
+                    placeholder="Add task..." 
+                    required
+                >
+                <button type="submit" class="add-task-btn">+</button>
+            </form>
+            
+            <div id="tasks-list"></div>
+            
+            <div id="empty-state" class="empty-state" style="display: none;">
+                ✨ All done! Time to relax 🎉
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TodoWidget {
+            constructor() {
+                this.tasks = JSON.parse(localStorage.getItem('widget-tasks') || '[]');
+                this.form = document.getElementById('add-task-form');
+                this.input = document.getElementById('task-input');
+                this.tasksList = document.getElementById('tasks-list');
+                this.counter = document.getElementById('task-counter');
+                this.emptyState = document.getElementById('empty-state');
+                
+                this.init();
+            }
+            
+            init() {
+                this.form.addEventListener('submit', (e) => this.addTask(e));
+                this.renderTasks();
+                this.updateCounter();
+                
+                // Listen for messages from main app
+                window.addEventListener('message', (e) => {
+                    if (e.data.type === 'SYNC_TASKS') {
+                        this.tasks = e.data.tasks;
+                        this.saveTasks();
+                        this.renderTasks();
+                        this.updateCounter();
+                    }
+                });
+                
+                // Sync with main app every 30 seconds
+                setInterval(() => this.syncWithMainApp(), 30000);
+            }
+            
+            addTask(e) {
+                e.preventDefault();
+                const text = this.input.value.trim();
+                if (!text) return;
+                
+                const task = {
+                    id: Date.now(),
+                    text: text,
+                    completed: false,
+                    priority: 'normal',
+                    timestamp: new Date().toISOString()
+                };
+                
+                this.tasks.unshift(task);
+                this.saveTasks();
+                this.renderTasks();
+                this.updateCounter();
+                this.input.value = '';
+                
+                // Notify main app
+                this.notifyMainApp();
+            }
+            
+            toggleTask(id) {
+                const task = this.tasks.find(t => t.id === id);
+                if (task) {
+                    task.completed = !task.completed;
+                    this.saveTasks();
+                    this.renderTasks();
+                    this.updateCounter();
+                    this.notifyMainApp();
+                }
+            }
+            
+            deleteTask(id) {
+                this.tasks = this.tasks.filter(t => t.id !== id);
+                this.saveTasks();
+                this.renderTasks();
+                this.updateCounter();
+                this.notifyMainApp();
+            }
+            
+            saveTasks() {
+                localStorage.setItem('widget-tasks', JSON.stringify(this.tasks));
+            }
+            
+            renderTasks() {
+                const activeTasks = this.tasks.filter(t => !t.completed);
+                const completedTasks = this.tasks.filter(t => t.completed);
+                
+                this.tasksList.innerHTML = '';
+                
+                // Show active tasks first
+                activeTasks.slice(0, 5).forEach(task => {
+                    this.tasksList.appendChild(this.createTaskElement(task));
+                });
+                
+                // Show completed tasks (limited)
+                if (completedTasks.length > 0 && activeTasks.length < 5) {
+                    completedTasks.slice(0, 5 - activeTasks.length).forEach(task => {
+                        this.tasksList.appendChild(this.createTaskElement(task));
+                    });
+                }
+                
+                this.emptyState.style.display = this.tasks.length === 0 ? 'block' : 'none';
+            }
+            
+            createTaskElement(task) {
+                const div = document.createElement('div');
+                div.className = `task-item priority-${task.priority} ${task.completed ? 'task-completed' : ''}`;
+                
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input 
+                            type="checkbox" 
+                            ${task.completed ? 'checked' : ''} 
+                            onchange="widget.toggleTask(${task.id})"
+                            style="cursor: pointer;"
+                        >
+                        <span style="flex: 1; font-size: 14px;">${task.text}</span>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-btn" onclick="widget.deleteTask(${task.id})">🗑️</button>
+                    </div>
+                `;
+                
+                return div;
+            }
+            
+            updateCounter() {
+                const activeCount = this.tasks.filter(t => !t.completed).length;
+                this.counter.textContent = `${activeCount} active task${activeCount !== 1 ? 's' : ''}`;
+            }
+            
+            syncWithMainApp() {
+                // Try to get tasks from main app
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({ type: 'GET_TASKS' }, '*');
+                }
+            }
+            
+            notifyMainApp() {
+                // Notify main app of changes
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({ 
+                        type: 'WIDGET_TASKS_UPDATED', 
+                        tasks: this.tasks 
+                    }, '*');
+                }
+            }
+        }
+        
+        // Initialize widget
+        const widget = new TodoWidget();
+        
+        // Handle window messages
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'TASKS_DATA') {
+                widget.tasks = e.data.tasks;
+                widget.saveTasks();
+                widget.renderTasks();
+                widget.updateCounter();
+            }
+        });
+    </script>
+</body>
+</html>

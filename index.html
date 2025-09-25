@@ -3,7 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Do List</title>
+  <title>To-Do List PWA</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="A beautiful, priority-powered To-Do List with desktop widget support" />
+  <meta name="theme-color" content="#ec4899" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ToDo PWA" />
+  <meta name="msapplication-TileColor" content="#ec4899" />
+  <meta name="msapplication-tap-highlight" content="no" />
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+  
+  <!-- Stylesheets -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet" />
 </head>
@@ -11,7 +34,10 @@
   <div class="max-w-md mx-auto p-6 backdrop-blur-lg bg-white/10 dark:bg-white/5 rounded-2xl shadow-xl mt-16">
     <header class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-extrabold tracking-wider">To-Do's</h1>
-      <button id="mode-toggle" class="text-xl p-2 hover:bg-white/20 rounded-full">🌞</button>
+      <div class="flex gap-2">
+        <button id="widget-btn" class="text-xl p-2 hover:bg-white/20 rounded-full" title="Open Desktop Widget">📱</button>
+        <button id="mode-toggle" class="text-xl p-2 hover:bg-white/20 rounded-full">🌞</button>
+      </div>
     </header>
     <div id="task-counter" class="text-sm text-white/70 mb-2 text-center">You have 0 tasks. Get moving! 🏃‍♂️</div>
     <form id="task-form" class="flex gap-2 mb-4">
@@ -61,6 +87,27 @@
 
   <div id="toast" class="fixed bottom-4 right-4 bg-pink-600 text-white px-4 py-2 rounded-xl shadow-xl hidden">
     ✅ Task Added!
+  </div>
+
+  <!-- Install Prompt -->
+  <div id="install-prompt" class="fixed bottom-4 left-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4 max-w-sm hidden">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center text-2xl">
+        📱
+      </div>
+      <div>
+        <h3 class="font-bold text-white">Install App</h3>
+        <p class="text-sm text-white/70">Add to home screen for quick access</p>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <button id="install-btn" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+        Install
+      </button>
+      <button id="dismiss-install" class="px-4 py-2 text-white/70 hover:text-white transition">
+        Later
+      </button>
+    </div>
   </div>
 
   <script src="script.js"></script>

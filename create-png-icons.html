@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create PNG Icons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        canvas {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+        }
+        .download-btn {
+            display: block;
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: #ec4899;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .download-btn:hover {
+            background: #db2777;
+        }
+        .batch-download {
+            background: #10b981;
+            padding: 12px 24px;
+            font-size: 16px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+        }
+        .batch-download:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Create PNG Icons for PWA</h1>
+        <p>Click the download buttons to save PNG versions of the icons:</p>
+        
+        <button id="download-all" class="batch-download">📥 Download All Icons</button>
+        
+        <div id="icon-container"></div>
+    </div>
+
+    <script>
+        const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
+        const container = document.getElementById('icon-container');
+        const icons = {};
+
+        function createIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#ec4899');
+            gradient.addColorStop(1, '#8b5cf6');
+            
+            // Fill background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Add rounded corners
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, size * 0.2);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Draw checkmark
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = Math.max(2, size * 0.08);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const iconSize = size * 0.4;
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX - iconSize * 0.3, centerY);
+            ctx.lineTo(centerX - iconSize * 0.1, centerY + iconSize * 0.2);
+            ctx.lineTo(centerX + iconSize * 0.3, centerY - iconSize * 0.2);
+            ctx.stroke();
+
+            return canvas;
+        }
+
+        function downloadIcon(size) {
+            const canvas = icons[size];
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function downloadAllIcons() {
+            sizes.forEach((size, index) => {
+                setTimeout(() => {
+                    downloadIcon(size);
+                }, index * 200); // Stagger downloads
+            });
+        }
+
+        // Generate all icons
+        sizes.forEach(size => {
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'icon-preview';
+            
+            const canvas = createIcon(size);
+            icons[size] = canvas;
+            
+            iconDiv.innerHTML = `
+                <h4>${size}×${size}</h4>
+                <div style="display: flex; justify-content: center;">
+                    ${canvas.outerHTML}
+                </div>
+                <a href="#" class="download-btn" onclick="downloadIcon(${size})">Download PNG</a>
+            `;
+            
+            container.appendChild(iconDiv);
+        });
+
+        // Batch download button
+        document.getElementById('download-all').addEventListener('click', downloadAllIcons);
+    </script>
+</body>
+</html>
