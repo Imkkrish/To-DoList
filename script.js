@@ -10,6 +10,10 @@ const clearCompleted = document.getElementById('clear-completed');
 const counter = document.getElementById('task-counter');
 const emptyState = document.getElementById('empty-state');
 const toast = document.getElementById('toast');
+const widgetBtn = document.getElementById('widget-btn');
+const installPrompt = document.getElementById('install-prompt');
+const installBtn = document.getElementById('install-btn');
+const dismissInstall = document.getElementById('dismiss-install');
 
 let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 let currentFilter = 'active';
@@ -219,3 +223,173 @@ form.addEventListener('submit', e => {
 
 renderTasks();
 updateFilterHighlight(filterActive);
+
+// PWA and Widget Functionality
+let deferredPrompt;
+let widgetWindow = null;
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('SW registered: ', registration);
+      })
+      .catch((registrationError) => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
+}
+
+// Install Prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('PWA install prompt triggered');
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Show install prompt after 3 seconds
+  setTimeout(() => {
+    if (!localStorage.getItem('install-dismissed')) {
+      installPrompt.classList.remove('hidden');
+    }
+  }, 3000);
+});
+
+// Install button click
+installBtn.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`PWA install outcome: ${outcome}`);
+    deferredPrompt = null;
+    installPrompt.classList.add('hidden');
+  }
+});
+
+// Dismiss install prompt
+dismissInstall.addEventListener('click', () => {
+  installPrompt.classList.add('hidden');
+  localStorage.setItem('install-dismissed', 'true');
+});
+
+// Widget functionality
+widgetBtn.addEventListener('click', () => {
+  if (widgetWindow && !widgetWindow.closed) {
+    widgetWindow.focus();
+  } else {
+    widgetWindow = window.open(
+      '/widget.html',
+      'TodoWidget',
+      'width=350,height=450,resizable=yes,scrollbars=no,toolbar=no,menubar=no,location=no,status=no'
+    );
+    
+    // Sync tasks with widget
+    setTimeout(() => {
+      if (widgetWindow && !widgetWindow.closed) {
+        widgetWindow.postMessage({ type: 'SYNC_TASKS', tasks: tasks }, '*');
+      }
+    }, 500);
+  }
+});
+
+// Listen for messages from widget
+window.addEventListener('message', (event) => {
+  if (event.data.type === 'WIDGET_TASKS_UPDATED') {
+    tasks = event.data.tasks;
+    saveTasks();
+    renderTasks();
+    showToast('📱 Widget synced!');
+  }
+});
+
+// Handle app installation
+window.addEventListener('appinstalled', () => {
+  console.log('PWA was installed');
+  showToast('🎉 App installed successfully!');
+  installPrompt.classList.add('hidden');
+});
+
+// Handle online/offline status
+window.addEventListener('online', () => {
+  showToast('🌐 Back online!');
+});
+
+window.addEventListener('offline', () => {
+  showToast('📡 Working offline');
+});
+
+// Enhanced task management with PWA features
+function addTask(text, priority) {
+  const task = {
+    text,
+    completed: false,
+    priority,
+    id: Date.now(),
+    timestamp: new Date().toISOString()
+  };
+  
+  tasks.push(task);
+  saveTasks();
+  renderTasks();
+  showToast('✅ Task Added!');
+  
+  // Sync with widget if open
+  if (widgetWindow && !widgetWindow.closed) {
+    widgetWindow.postMessage({ type: 'SYNC_TASKS', tasks: tasks }, '*');
+  }
+  
+  // Show notification if permission granted
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('Task Added!', {
+      body: `"${text}" added to your list`,
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/icon-72x72.png'
+    });
+  }
+}
+
+// Request notification permission
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// Enhanced save with PWA features
+function saveTasks() {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  
+  // Also save to IndexedDB for better offline support
+  if ('indexedDB' in window) {
+    const request = indexedDB.open('TodoPWA', 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('tasks')) {
+        db.createObjectStore('tasks', { keyPath: 'id' });
+      }
+    };
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction(['tasks'], 'readwrite');
+      const store = transaction.objectStore('tasks');
+      tasks.forEach(task => store.put(task));
+    };
+  }
+}
+
+// Load tasks from IndexedDB on startup
+if ('indexedDB' in window) {
+  const request = indexedDB.open('TodoPWA', 1);
+  request.onsuccess = () => {
+    const db = request.result;
+    if (db.objectStoreNames.contains('tasks')) {
+      const transaction = db.transaction(['tasks'], 'readonly');
+      const store = transaction.objectStore('tasks');
+      const getAllRequest = store.getAll();
+      getAllRequest.onsuccess = () => {
+        if (getAllRequest.result.length > 0) {
+          tasks = getAllRequest.result;
+          renderTasks();
+        }
+      };
+    }
+  };
+}
