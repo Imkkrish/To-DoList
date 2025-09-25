@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth transition-colors duration-300">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4f46e5" />
+  <title>Quick Add - To-Do</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-600 dark:from-gray-900 dark:to-black font-poppins text-white">
+  <div class="max-w-md mx-auto p-6 backdrop-blur-lg bg-white/10 dark:bg-white/5 rounded-2xl shadow-xl mt-16">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-extrabold tracking-wider">Quick Add</h1>
+      <a href="/" class="text-sm px-3 py-1 bg-white/20 rounded-lg">Home</a>
+    </header>
+
+    <form id="quick-form" class="space-y-3">
+      <input
+        type="text"
+        id="quick-input"
+        placeholder="Task title"
+        class="w-full p-3 rounded-lg bg-white/30 placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-pink-400" required
+      />
+      <select id="quick-priority" class="bg-white/20 text-white text-sm rounded-lg px-2 py-2">
+        <option value="chill">🧘 Chill</option>
+        <option value="normal" selected>📌 Normal</option>
+        <option value="urgent">🔥 Urgent</option>
+      </select>
+      <div class="flex gap-3 justify-end">
+        <button type="button" id="cancel" class="px-4 py-2 bg-white/20 rounded-lg">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-pink-500 font-bold rounded-lg">Add</button>
+      </div>
+    </form>
+
+    <p id="status" class="text-sm opacity-80 mt-3"></p>
+  </div>
+
+  <script src="/quick-add.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            poppins: ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

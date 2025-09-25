@@ -37,9 +37,15 @@ A sleek, animated, and priority-powered To-Do List built with vanilla HTML, CSS 
 ## 📁 Project Structure
 
 ```
-├── index.html       # Main HTML file
-├── script.js        # JavaScript logic
-└── README.md        # You're reading it!
+├── index.html         # Main HTML file
+├── script.js          # JavaScript logic
+├── service-worker.js  # PWA offline + Share Target handler
+├── manifest.webmanifest
+├── quick-add.html     # Minimal quick-add window
+├── quick-add.js
+├── icons/
+│   └── favicon.svg
+└── README.md          # You're reading it!
 
 ```
 
@@ -58,6 +64,28 @@ cd To-DoList
 ```
 
 That’s it. No npm install. No build step. Just open and go.
+
+---
+
+## 📦 PWA (Installable App)
+
+- Android (Chrome): Menu → Add to Home screen or Install app.
+- Windows/Linux (Chrome/Edge): Omnibox Install button → Install.
+- macOS (Chrome/Edge): File → Install To-Do List. Safari (macOS 14+): Share → Add to Dock.
+
+### Quick Add (widget-like)
+- Use app shortcut "Quick Add" from the installed app icon (Android, Windows, ChromeOS, some desktop Chromium).
+- Direct URL: `/quick-add.html` or `/quick-add.html?priority=urgent`.
+- Protocol handler: open a link like `web+todo:Buy milk` to prefill Quick Add.
+
+### Share to the app (Android/Chromium)
+- Share text/links from other apps/sites → select this app; it opens Quick Add with the content.
+
+### Offline and Badging
+- Works offline; data stored in `localStorage`.
+- App badge shows active task count where supported (Chromium-based browsers).
+
+Note: Native OS homescreen/desktop widgets aren’t available to PWAs on Android/macOS yet. Use the "Quick Add" shortcut/window as a lightweight alternative.
 
 ---
 

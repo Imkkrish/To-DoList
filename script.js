@@ -17,6 +17,7 @@ let currentFilter = 'active';
 const filters = [filterAll, filterActive, filterDone];
 const root = document.documentElement;
 const toggle = document.getElementById('mode-toggle');
+const installButton = document.getElementById('install-button');
 
 if (localStorage.getItem('theme') === 'dark') {
   root.classList.add('dark');
@@ -219,3 +220,75 @@ form.addEventListener('submit', e => {
 
 renderTasks();
 updateFilterHighlight(filterActive);
+
+// PWA install prompt handling
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installButton) installButton.classList.remove('hidden');
+});
+
+if (installButton) {
+  installButton.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installButton.classList.add('hidden');
+  });
+}
+
+// App badging for active tasks
+async function setAppBadge(count) {
+  try {
+    if (navigator.setAppBadge) {
+      if (count > 0) await navigator.setAppBadge(count); else await navigator.clearAppBadge();
+    }
+  } catch (_) {}
+}
+
+function updateBadge() {
+  const activeCount = tasks.filter(t => !t.completed).length;
+  setAppBadge(activeCount);
+}
+
+// Update badge on changes
+const originalAddTask = addTask;
+addTask = function(text, priority) {
+  originalAddTask(text, priority);
+  updateBadge();
+}
+
+const originalDeleteTask = deleteTask;
+deleteTask = function(i) {
+  originalDeleteTask(i);
+  updateBadge();
+}
+
+const originalToggleComplete = toggleComplete;
+toggleComplete = function(i) {
+  originalToggleComplete(i);
+  updateBadge();
+}
+
+// Initial badge
+updateBadge();
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js');
+  });
+}
+
+// Handle protocol links web+todo: quick add via URL
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const filter = params.get('filter');
+  if (filter && ['all','active','done'].includes(filter)) {
+    currentFilter = filter;
+    updateFilterHighlight(filter === 'all' ? filterAll : filter === 'active' ? filterActive : filterDone);
+    renderTasks();
+  }
+});

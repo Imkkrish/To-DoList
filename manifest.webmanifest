@@ -1,0 +1,52 @@
+{
+  "name": "To-Do List",
+  "short_name": "To-Do",
+  "description": "Fast, offline-capable to-do list with quick add.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "en",
+  "background_color": "#0b0b0f",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Quick Add",
+      "short_name": "Quick Add",
+      "description": "Open quick add screen",
+      "url": "/quick-add.html",
+      "icons": [{ "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Add Urgent Task",
+      "short_name": "Urgent",
+      "description": "Quick add urgent task",
+      "url": "/quick-add.html?priority=urgent",
+      "icons": [{ "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "View Active Tasks",
+      "short_name": "Active",
+      "description": "Go to active tasks",
+      "url": "/?filter=active",
+      "icons": [{ "src": "/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "share_target": {
+    "action": "/share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "protocol_handlers": [
+    { "protocol": "web+todo", "url": "/quick-add.html?text=%s" }
+  ]
+}
+
