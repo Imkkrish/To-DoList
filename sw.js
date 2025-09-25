@@ -1,9 +1,10 @@
-const CACHE_NAME = 'todo-pwa-v1.0.0';
+const CACHE_NAME = 'todo-pwa-v2.0.0';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/script.js',
-  '/manifest.json',
+  './',
+  './index.html',
+  './app.jsx',
+  './manifest.json',
+  './widget.html',
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap'
 ];
@@ -91,7 +92,7 @@ self.addEventListener('fetch', (event) => {
             console.error('Service Worker: Fetch failed', error);
             // Return offline page or fallback for navigation requests
             if (event.request.destination === 'document') {
-              return caches.match('/index.html');
+              return caches.match('./index.html');
             }
             throw error;
           });
@@ -189,9 +190,11 @@ self.addEventListener('message', (event) => {
   
   if (event.data && event.data.type === 'GET_TASKS') {
     // Send tasks to the widget
-    event.ports[0].postMessage({
-      type: 'TASKS_DATA',
-      tasks: JSON.parse(localStorage.getItem('tasks') || '[]')
-    });
+    if (event.ports && event.ports[0]) {
+      event.ports[0].postMessage({
+        type: 'TASKS_DATA',
+        tasks: []
+      });
+    }
   }
 });

@@ -1,12 +1,12 @@
-# 📝 To-Do List PWA
+# 📝 To-Do List PWA (React PWA, GitHub Pages)
 
 > "Productivity isn't just about getting stuff done — it's about slaying tasks with style."
 
-A sleek, animated, and priority-powered To-Do List built with vanilla HTML, CSS (Tailwind), and JavaScript — now converted into a **Progressive Web App (PWA)** with desktop widget support! No frameworks, no fluff — just vibes, functionality, and modern PWA features.
+Sleek, animated, priority-powered To-Do List now running as a **React (CDN) Progressive Web App** with a desktop/mobile widget and GitHub Pages deployment.
 
 ### 🚀 Live Demo
 
-👉 [Click here to get productive](https://imkkrish.github.io/To-DoList/)
+Deploy from your repo’s `main`/`master` branch with GitHub Pages. This repo contains a ready-to-go Pages workflow.
 
 ---
 ## ✨ Features
@@ -76,13 +76,13 @@ A sleek, animated, and priority-powered To-Do List built with vanilla HTML, CSS 
 ## ⚙️ How to Run Locally
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/imkkrish/To-DoList.git
+# 1. Clone your repo
+git clone <your-fork-or-repo-url>
 
 # 2. Open the folder
-cd To-DoList
+cd <repo>
 
-# 3. Open index.html in your browser
+# 3. Open index.html in your browser (no build step)
 ```
 
 That's it. No npm install. No build step. Just open and go.
